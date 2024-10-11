@@ -1,25 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Dashboard from './pages/Dashboard';
+import ServerView from './pages/ServerView';
+import DirectMessages from './pages/DirectMessages';
+import Login from './pages/Login';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-function App() {
+const ProtectedRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<ServerView />} />
+            <Route path="servers/:serverId" element={<ServerView />} />
+            <Route path="direct-messages" element={<DirectMessages />} />
+            <Route path="direct-messages/:friendId" element={<DirectMessages />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
-}
+};
 
 export default App;
